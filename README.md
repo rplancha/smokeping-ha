@@ -7,7 +7,11 @@
 
 A lightweight integration that exposes SmokePing latency data to Home Assistant via REST sensors. Monitor your WAN health, compare ISP performance, and get alerts when network issues occur.
 
-<!-- Add your own screenshot: ![Dashboard Preview](docs/images/dashboard-preview.png) -->
+## Dashboard Preview
+
+![SmokePing Home Assistant Dashboard](docs/images/dashboard-preview.png)
+
+*Monitor multi-ISP latency with color-coded Mushroom cards showing real-time network health across different WAN connections.*
 
 ## Features
 
@@ -133,6 +137,10 @@ The ISP name is auto-detected from the hostname. Customize the `detect_isp()` fu
 The sensor configuration polls the API every 60 seconds. Each sensor includes:
 - **State**: Latency in milliseconds
 - **Attributes**: `loss_pct`, `timestamp`
+
+![Home Assistant Sensor States](docs/images/sensor-states.png)
+
+*Sensors appear in Home Assistant's developer tools, displaying current latency values with packet loss percentages and timestamps.*
 
 ### Dashboard Cards
 

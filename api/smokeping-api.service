@@ -5,17 +5,50 @@ After=network.target smokeping.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /usr/local/bin/smokeping-api.py
+ExecStart=/usr/bin/python3 /usr/local/bin/smokeping_api.py
 Restart=always
 RestartSec=10
 
+# =============================================================================
+# Configuration via environment variables
+# =============================================================================
+# The API binds to localhost (127.0.0.1) by default for security.
+# Uncomment the line below to allow connections from other machines
+# (required when Home Assistant runs on a different host):
+# Environment=SMOKEPING_API_BIND_ADDRESS=0.0.0.0
+
+# Port to listen on (default: 8080)
+# Environment=SMOKEPING_API_PORT=8080
+
+# Path to SmokePing RRD data directory (default: /var/lib/smokeping)
+# Environment=SMOKEPING_API_DATA_DIR=/var/lib/smokeping
+
+# Number of pings per SmokePing probe cycle (default: 20)
+# Check your SmokePing config if you've changed this
+# Environment=SMOKEPING_API_TOTAL_PINGS=20
+
+# ISP/connection identifier (default: auto-detected from hostname)
+# Set this to override auto-detection, e.g., "fios", "comcast", "primary"
+# Environment=SMOKEPING_API_ISP=primary
+
+# =============================================================================
 # Security hardening
+# =============================================================================
 User=smokeping
 Group=smokeping
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 ReadOnlyPaths=/var/lib/smokeping
+
+# Additional hardening (defense in depth)
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
 
 # If the smokeping user doesn't exist, uncomment these instead:
 # User=pi

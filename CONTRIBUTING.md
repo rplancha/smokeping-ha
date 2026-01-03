@@ -17,41 +17,69 @@ Thank you for your interest in contributing! This project welcomes contributions
    git clone https://github.com/YOUR_USERNAME/smokeping-ha.git
    cd smokeping-ha
    ```
-3. Create a feature branch:
+3. Install development dependencies:
+   ```bash
+   # Using uv (recommended)
+   uv sync --dev
+
+   # Or using pip
+   pip install -e ".[dev]"
+   ```
+4. Create a feature branch:
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 ## Code Style
 
-- Python: Follow PEP 8
+- Python: Follow PEP 8, enforced by ruff
 - YAML: 2-space indentation
-- Keep it simple - this project intentionally has zero dependencies
+- Type hints: Required for all functions
+- Keep it simple - this project intentionally has zero runtime dependencies
 
 ## Testing
 
-Before submitting:
+Before submitting, run all quality checks:
 
-1. Test the API script manually:
-   ```bash
-   python3 api/smokeping-api.py &
-   curl http://localhost:8080/
-   curl http://localhost:8080/health
-   ```
+```bash
+# Run tests
+uv run pytest
 
-2. Validate YAML files:
-   ```bash
-   python3 -c "import yaml; yaml.safe_load(open('homeassistant/sensors/smokeping_sensors.yaml'))"
-   ```
+# Run linter
+uv run ruff check .
 
-3. Test in Home Assistant if possible
+# Run formatter check
+uv run ruff format --check .
+
+# Run type checker
+uv run mypy api/ tests/
+```
+
+All checks must pass before merging.
+
+### Manual Testing
+
+Test the API script manually:
+```bash
+python3 api/smokeping_api.py &
+curl http://localhost:8080/
+curl http://localhost:8080/health
+```
+
+Validate YAML files:
+```bash
+python3 -c "import yaml; yaml.safe_load(open('homeassistant/sensors/smokeping_sensors.yaml'))"
+```
+
+Test in Home Assistant if possible.
 
 ## Pull Request Process
 
-1. Update documentation if needed
-2. Add yourself to CONTRIBUTORS.md (optional)
-3. Submit PR with clear description of changes
-4. Respond to review feedback
+1. Write tests for new functionality
+2. Ensure all quality checks pass
+3. Update documentation if needed
+4. Submit PR with clear description of changes
+5. Respond to review feedback
 
 ## Questions?
 

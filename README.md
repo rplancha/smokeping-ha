@@ -57,12 +57,12 @@ sudo apt update && sudo apt install -y rrdtool
 
 # Download and install the API
 sudo curl -o /usr/local/bin/smokeping_api.py \
-  https://raw.githubusercontent.com/ryanplanchart/smokeping-ha/main/api/smokeping_api.py
+  https://raw.githubusercontent.com/rplancha/smokeping-ha/main/api/smokeping_api.py
 sudo chmod +x /usr/local/bin/smokeping_api.py
 
 # Install and start the service
 sudo curl -o /etc/systemd/system/smokeping-api.service \
-  https://raw.githubusercontent.com/ryanplanchart/smokeping-ha/main/api/smokeping-api.service
+  https://raw.githubusercontent.com/rplancha/smokeping-ha/main/api/smokeping-api.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now smokeping-api
 
@@ -230,7 +230,7 @@ The API sets `Access-Control-Allow-Origin: *` to allow cross-origin requests. Th
 
 ```bash
 # Clone the repository
-git clone https://github.com/ryanplanchart/smokeping-ha.git
+git clone https://github.com/rplancha/smokeping-ha.git
 cd smokeping-ha
 
 # Install dependencies (using uv)

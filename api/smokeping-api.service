@@ -1,6 +1,6 @@
 [Unit]
 Description=SmokePing RRD to JSON API
-Documentation=https://github.com/ryanplanchart/smokeping-ha
+Documentation=https://github.com/rplancha/smokeping-ha
 After=network.target smokeping.service
 
 [Service]

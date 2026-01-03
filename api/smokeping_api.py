@@ -5,7 +5,7 @@ SmokePing RRD to JSON API
 A lightweight HTTP server that reads SmokePing RRD files and exposes
 latency/loss data as JSON for Home Assistant REST sensors.
 
-Project: https://github.com/ryanplanchart/smokeping-ha
+Project: https://github.com/rplancha/smokeping-ha
 License: MIT
 
 Deploy to: /usr/local/bin/smokeping_api.py

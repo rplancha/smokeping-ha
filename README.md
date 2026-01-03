@@ -319,3 +319,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 - [SmokePing](https://oss.oetiker.ch/smokeping/) by Tobi Oetiker
 - [Home Assistant](https://www.home-assistant.io/) community
 - [Mushroom Cards](https://github.com/piitaya/lovelace-mushroom) for beautiful dashboard components
+- [Claude](https://claude.ai/) by Anthropic and [OpenCode](https://github.com/opencode-ai/opencode) for AI-assisted development

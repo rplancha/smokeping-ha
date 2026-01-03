@@ -1,0 +1,253 @@
+# SmokePing WAN Health Automations
+#
+# These automations monitor WAN latency from SmokePing sensors and send
+# push notifications when issues are detected.
+#
+# Features:
+# - Forgiving thresholds (10 min sustained issue before alerting)
+# - 1-hour cooldown between alerts (no spam)
+# - Recovery notifications (only if an alert was sent)
+# - Per-ISP alerting (not per-target)
+#
+# SETUP:
+# 1. Update sensor entity IDs to match your sensor names
+# 2. Update the notify service to match your device
+#    (Find yours at: Developer Tools > Services > search "notify")
+# 3. Add to your configuration.yaml:
+#    - If no existing automations: automation: !include wan_alerts.yaml
+#    - If you have automation: !include automations.yaml, use BOTH:
+#        automation ui: !include automations.yaml
+#        automation manual: !include wan_alerts.yaml
+# 4. Reload automations (Settings > Automations > Reload)
+
+# =============================================================================
+# Primary WAN Degraded Alert
+# =============================================================================
+- id: smokeping_primary_degraded_alert
+  alias: "SmokePing: Primary WAN Degraded"
+  description: "Alert when primary ISP latency is high for 10+ minutes"
+  mode: single
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.primary_cloudflare_latency  # UPDATE THIS
+      above: 100
+      for:
+        minutes: 10
+  condition:
+    # Only alert if we haven't alerted in the last hour
+    - condition: template
+      value_template: >
+        {% set last_alert = state_attr('automation.smokeping_primary_degraded_alert', 'last_triggered') %}
+        {% if last_alert is none %}
+          true
+        {% else %}
+          {{ (now() - last_alert).total_seconds() > 3600 }}
+        {% endif %}
+  action:
+    - service: notify.mobile_app_YOUR_PHONE  # UPDATE THIS
+      data:
+        title: "Primary WAN Degraded"
+        message: >
+          Latency to Cloudflare: {{ states('sensor.primary_cloudflare_latency') }}ms
+          (normally ~15ms). Issue sustained for 10+ minutes.
+        data:
+          push:
+            sound:
+              name: default
+              critical: 0
+            interruption-level: time-sensitive
+          tag: smokeping-primary-alert
+          group: network-alerts
+
+# =============================================================================
+# Primary WAN Recovered
+# =============================================================================
+- id: smokeping_primary_recovered
+  alias: "SmokePing: Primary WAN Recovered"
+  description: "Notify when primary ISP latency returns to normal after an alert"
+  mode: single
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.primary_cloudflare_latency  # UPDATE THIS
+      below: 50
+      for:
+        minutes: 5
+  condition:
+    # Only notify recovery if we sent an alert in the last 2 hours
+    - condition: template
+      value_template: >
+        {% set last_alert = state_attr('automation.smokeping_primary_degraded_alert', 'last_triggered') %}
+        {% if last_alert is none %}
+          false
+        {% else %}
+          {{ (now() - last_alert).total_seconds() < 7200 }}
+        {% endif %}
+  action:
+    - service: notify.mobile_app_YOUR_PHONE  # UPDATE THIS
+      data:
+        title: "Primary WAN Recovered"
+        message: >
+          Latency returned to normal: {{ states('sensor.primary_cloudflare_latency') }}ms
+        data:
+          push:
+            sound:
+              name: default
+          tag: smokeping-primary-alert
+          group: network-alerts
+
+# =============================================================================
+# Secondary WAN Degraded Alert
+# Remove this section if you only have one ISP
+# =============================================================================
+- id: smokeping_secondary_degraded_alert
+  alias: "SmokePing: Secondary WAN Degraded"
+  description: "Alert when secondary ISP latency is high for 10+ minutes"
+  mode: single
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.secondary_cloudflare_latency  # UPDATE THIS
+      above: 100
+      for:
+        minutes: 10
+  condition:
+    # Only alert if we haven't alerted in the last hour
+    - condition: template
+      value_template: >
+        {% set last_alert = state_attr('automation.smokeping_secondary_degraded_alert', 'last_triggered') %}
+        {% if last_alert is none %}
+          true
+        {% else %}
+          {{ (now() - last_alert).total_seconds() > 3600 }}
+        {% endif %}
+  action:
+    - service: notify.mobile_app_YOUR_PHONE  # UPDATE THIS
+      data:
+        title: "Secondary WAN Degraded"
+        message: >
+          Latency to Cloudflare: {{ states('sensor.secondary_cloudflare_latency') }}ms
+          (normally ~20ms). Issue sustained for 10+ minutes.
+        data:
+          push:
+            sound:
+              name: default
+              critical: 0
+            interruption-level: time-sensitive
+          tag: smokeping-secondary-alert
+          group: network-alerts
+
+# =============================================================================
+# Secondary WAN Recovered
+# =============================================================================
+- id: smokeping_secondary_recovered
+  alias: "SmokePing: Secondary WAN Recovered"
+  description: "Notify when secondary ISP latency returns to normal after an alert"
+  mode: single
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.secondary_cloudflare_latency  # UPDATE THIS
+      below: 50
+      for:
+        minutes: 5
+  condition:
+    # Only notify recovery if we sent an alert in the last 2 hours
+    - condition: template
+      value_template: >
+        {% set last_alert = state_attr('automation.smokeping_secondary_degraded_alert', 'last_triggered') %}
+        {% if last_alert is none %}
+          false
+        {% else %}
+          {{ (now() - last_alert).total_seconds() < 7200 }}
+        {% endif %}
+  action:
+    - service: notify.mobile_app_YOUR_PHONE  # UPDATE THIS
+      data:
+        title: "Secondary WAN Recovered"
+        message: >
+          Latency returned to normal: {{ states('sensor.secondary_cloudflare_latency') }}ms
+        data:
+          push:
+            sound:
+              name: default
+          tag: smokeping-secondary-alert
+          group: network-alerts
+
+# =============================================================================
+# Both WANs Degraded (Critical)
+# =============================================================================
+- id: smokeping_both_wans_degraded
+  alias: "SmokePing: Both WANs Degraded"
+  description: "Critical alert when both ISPs have high latency"
+  mode: single
+  trigger:
+    - platform: template
+      value_template: >
+        {{ states('sensor.primary_cloudflare_latency') | float(0) > 100 and
+           states('sensor.secondary_cloudflare_latency') | float(0) > 100 }}
+      for:
+        minutes: 10
+  condition:
+    # Only alert if we haven't alerted in the last hour
+    - condition: template
+      value_template: >
+        {% set last_alert = state_attr('automation.smokeping_both_wans_degraded', 'last_triggered') %}
+        {% if last_alert is none %}
+          true
+        {% else %}
+          {{ (now() - last_alert).total_seconds() > 3600 }}
+        {% endif %}
+  action:
+    - service: notify.mobile_app_YOUR_PHONE  # UPDATE THIS
+      data:
+        title: "BOTH WANs Degraded!"
+        message: >
+          Primary: {{ states('sensor.primary_cloudflare_latency') }}ms
+          Secondary: {{ states('sensor.secondary_cloudflare_latency') }}ms
+          Both connections experiencing issues for 10+ minutes.
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+            interruption-level: critical
+          tag: smokeping-critical-alert
+          group: network-alerts
+
+# =============================================================================
+# Packet Loss Alert (Either ISP)
+# =============================================================================
+- id: smokeping_packet_loss_alert
+  alias: "SmokePing: Packet Loss Detected"
+  description: "Alert when significant packet loss is detected"
+  mode: single
+  trigger:
+    - platform: template
+      value_template: >
+        {{ state_attr('sensor.primary_cloudflare_latency', 'loss_pct') | float(0) > 10 or
+           state_attr('sensor.secondary_cloudflare_latency', 'loss_pct') | float(0) > 10 }}
+      for:
+        minutes: 10
+  condition:
+    # Only alert if we haven't alerted in the last hour
+    - condition: template
+      value_template: >
+        {% set last_alert = state_attr('automation.smokeping_packet_loss_alert', 'last_triggered') %}
+        {% if last_alert is none %}
+          true
+        {% else %}
+          {{ (now() - last_alert).total_seconds() > 3600 }}
+        {% endif %}
+  action:
+    - service: notify.mobile_app_YOUR_PHONE  # UPDATE THIS
+      data:
+        title: "Packet Loss Detected"
+        message: >
+          Primary loss: {{ state_attr('sensor.primary_cloudflare_latency', 'loss_pct') | default('N/A') }}%
+          Secondary loss: {{ state_attr('sensor.secondary_cloudflare_latency', 'loss_pct') | default('N/A') }}%
+        data:
+          push:
+            sound:
+              name: default
+            interruption-level: time-sensitive
+          tag: smokeping-loss-alert
+          group: network-alerts

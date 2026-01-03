@@ -1,0 +1,25 @@
+[Unit]
+Description=SmokePing RRD to JSON API
+Documentation=https://github.com/ryanplanchart/smokeping-ha
+After=network.target smokeping.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/bin/smokeping-api.py
+Restart=always
+RestartSec=10
+
+# Security hardening
+User=smokeping
+Group=smokeping
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/var/lib/smokeping
+
+# If the smokeping user doesn't exist, uncomment these instead:
+# User=pi
+# Group=pi
+
+[Install]
+WantedBy=multi-user.target

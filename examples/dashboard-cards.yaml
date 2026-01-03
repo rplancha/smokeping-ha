@@ -1,0 +1,172 @@
+# SmokePing Dashboard Cards for Home Assistant
+#
+# These are example Mushroom cards for displaying WAN health.
+# Requires: Mushroom Cards (install via HACS)
+#
+# Copy these into your dashboard YAML or use as reference for the UI editor.
+
+# =============================================================================
+# Section Title
+# =============================================================================
+- type: custom:mushroom-title-card
+  title: "WAN Health"
+  subtitle: "Latency via Primary and Secondary ISP"
+  card_mod:
+    style: |
+      mushroom-title-card {
+        --title-font-size: 18px;
+        --title-font-weight: 600;
+        --subtitle-font-size: 14px;
+        --subtitle-opacity: 0.7;
+      }
+
+# =============================================================================
+# Cloudflare Latency Comparison
+# =============================================================================
+- type: grid
+  columns: 2
+  square: false
+  cards:
+    - type: custom:mushroom-template-card
+      primary: "{{ states('sensor.primary_cloudflare_latency') | round(0) }}ms"
+      secondary: "Primary → Cloudflare"
+      icon: mdi:cloud-outline
+      icon_color: >
+        {% set latency = states('sensor.primary_cloudflare_latency') | float(999) %}
+        {{ 'green' if latency < 30 else 'amber' if latency < 75 else 'red' }}
+      layout: vertical
+      tap_action:
+        action: more-info
+        entity: sensor.primary_cloudflare_latency
+      card_mod:
+        style: |
+          ha-card {
+            background: linear-gradient(135deg, 
+              rgba(76, 175, 80, 0.15) 0%, 
+              rgba(76, 175, 80, 0.05) 100%);
+            border: 1px solid rgba(76, 175, 80, 0.1);
+            border-radius: 16px;
+            transition: all 0.2s ease;
+          }
+          ha-card:active {
+            transform: scale(0.97);
+          }
+
+    - type: custom:mushroom-template-card
+      primary: "{{ states('sensor.secondary_cloudflare_latency') | round(0) }}ms"
+      secondary: "Secondary → Cloudflare"
+      icon: mdi:cloud-outline
+      icon_color: >
+        {% set latency = states('sensor.secondary_cloudflare_latency') | float(999) %}
+        {{ 'green' if latency < 30 else 'amber' if latency < 75 else 'red' }}
+      layout: vertical
+      tap_action:
+        action: more-info
+        entity: sensor.secondary_cloudflare_latency
+      card_mod:
+        style: |
+          ha-card {
+            background: linear-gradient(135deg, 
+              rgba(33, 150, 243, 0.15) 0%, 
+              rgba(33, 150, 243, 0.05) 100%);
+            border: 1px solid rgba(33, 150, 243, 0.1);
+            border-radius: 16px;
+            transition: all 0.2s ease;
+          }
+          ha-card:active {
+            transform: scale(0.97);
+          }
+
+# =============================================================================
+# Google DNS Latency Comparison
+# =============================================================================
+- type: grid
+  columns: 2
+  square: false
+  cards:
+    - type: custom:mushroom-template-card
+      primary: "{{ states('sensor.primary_google_latency') | round(0) }}ms"
+      secondary: "Primary → Google"
+      icon: mdi:google
+      icon_color: >
+        {% set latency = states('sensor.primary_google_latency') | float(999) %}
+        {{ 'green' if latency < 30 else 'amber' if latency < 75 else 'red' }}
+      layout: vertical
+      tap_action:
+        action: more-info
+        entity: sensor.primary_google_latency
+      card_mod:
+        style: |
+          ha-card {
+            background: linear-gradient(135deg, 
+              rgba(76, 175, 80, 0.15) 0%, 
+              rgba(76, 175, 80, 0.05) 100%);
+            border: 1px solid rgba(76, 175, 80, 0.1);
+            border-radius: 16px;
+            transition: all 0.2s ease;
+          }
+          ha-card:active {
+            transform: scale(0.97);
+          }
+
+    - type: custom:mushroom-template-card
+      primary: "{{ states('sensor.secondary_google_latency') | round(0) }}ms"
+      secondary: "Secondary → Google"
+      icon: mdi:google
+      icon_color: >
+        {% set latency = states('sensor.secondary_google_latency') | float(999) %}
+        {{ 'green' if latency < 30 else 'amber' if latency < 75 else 'red' }}
+      layout: vertical
+      tap_action:
+        action: more-info
+        entity: sensor.secondary_google_latency
+      card_mod:
+        style: |
+          ha-card {
+            background: linear-gradient(135deg, 
+              rgba(33, 150, 243, 0.15) 0%, 
+              rgba(33, 150, 243, 0.05) 100%);
+            border: 1px solid rgba(33, 150, 243, 0.1);
+            border-radius: 16px;
+            transition: all 0.2s ease;
+          }
+          ha-card:active {
+            transform: scale(0.97);
+          }
+
+# =============================================================================
+# WAN Health Status (Binary Sensors)
+# =============================================================================
+- type: grid
+  columns: 2
+  square: false
+  cards:
+    - type: custom:mushroom-template-card
+      primary: "Primary WAN"
+      secondary: "{{ 'Healthy' if is_state('binary_sensor.primary_wan_healthy', 'on') else 'Degraded' }}"
+      icon: mdi:wan
+      icon_color: "{{ 'green' if is_state('binary_sensor.primary_wan_healthy', 'on') else 'red' }}"
+      layout: vertical
+      tap_action:
+        action: more-info
+        entity: binary_sensor.primary_wan_healthy
+
+    - type: custom:mushroom-template-card
+      primary: "Secondary WAN"
+      secondary: "{{ 'Healthy' if is_state('binary_sensor.secondary_wan_healthy', 'on') else 'Degraded' }}"
+      icon: mdi:wan
+      icon_color: "{{ 'green' if is_state('binary_sensor.secondary_wan_healthy', 'on') else 'red' }}"
+      layout: vertical
+      tap_action:
+        action: more-info
+        entity: binary_sensor.secondary_wan_healthy
+
+# =============================================================================
+# Color Thresholds Reference
+# =============================================================================
+# Green:  < 30ms  (Excellent)
+# Amber:  30-75ms (Acceptable)
+# Red:    > 75ms  (Degraded)
+#
+# Adjust these thresholds in the icon_color templates above to match your
+# network's normal latency ranges.

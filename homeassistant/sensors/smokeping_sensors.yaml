@@ -1,0 +1,137 @@
+# SmokePing REST Sensors for Home Assistant
+#
+# This configuration creates REST sensors that poll the SmokePing API
+# to get latency data for your WAN connections.
+#
+# SETUP:
+# 1. Copy this file to your Home Assistant config directory
+# 2. Update the resource URLs to match your SmokePing server hostnames
+# 3. Update sensor names to match your ISP names
+# 4. Add to your configuration.yaml:
+#      rest: !include smokeping_sensors.yaml
+# 5. Restart Home Assistant
+#
+# If you already have REST sensors, merge this into your existing config.
+
+# =============================================================================
+# PRIMARY ISP (e.g., FiOS, AT&T, etc.)
+# Update the resource URL and sensor names for your setup
+# =============================================================================
+- resource: http://YOUR_PRIMARY_SMOKEPING_SERVER:8080/
+  scan_interval: 60
+  timeout: 10
+  sensor:
+    - name: "Primary Cloudflare Latency"
+      unique_id: smokeping_primary_cloudflare_latency
+      value_template: "{{ value_json.targets.cloudflare.latency_ms | default('unavailable') }}"
+      unit_of_measurement: "ms"
+      state_class: measurement
+      icon: mdi:cloud-outline
+      json_attributes_path: "$.targets.cloudflare"
+      json_attributes:
+        - loss_pct
+        - timestamp
+
+    - name: "Primary Google Latency"
+      unique_id: smokeping_primary_google_latency
+      value_template: "{{ value_json.targets.google.latency_ms | default('unavailable') }}"
+      unit_of_measurement: "ms"
+      state_class: measurement
+      icon: mdi:google
+      json_attributes_path: "$.targets.google"
+      json_attributes:
+        - loss_pct
+        - timestamp
+
+    - name: "Primary AWS Latency"
+      unique_id: smokeping_primary_aws_latency
+      value_template: "{{ value_json.targets.aws_use1.latency_ms | default('unavailable') }}"
+      unit_of_measurement: "ms"
+      state_class: measurement
+      icon: mdi:aws
+      json_attributes_path: "$.targets.aws_use1"
+      json_attributes:
+        - loss_pct
+        - timestamp
+
+    - name: "Primary Netflix Latency"
+      unique_id: smokeping_primary_netflix_latency
+      value_template: "{{ value_json.targets.netflix.latency_ms | default('unavailable') }}"
+      unit_of_measurement: "ms"
+      state_class: measurement
+      icon: mdi:netflix
+      json_attributes_path: "$.targets.netflix"
+      json_attributes:
+        - loss_pct
+        - timestamp
+
+  binary_sensor:
+    - name: "Primary WAN Healthy"
+      unique_id: smokeping_primary_wan_healthy
+      value_template: >
+        {% set latency = value_json.targets.cloudflare.latency_ms | float(999) %}
+        {% set loss = value_json.targets.cloudflare.loss_pct | float(100) %}
+        {{ latency < 100 and loss < 10 }}
+      device_class: connectivity
+
+# =============================================================================
+# SECONDARY ISP (e.g., Comcast, Spectrum, etc.)
+# Remove this section if you only have one ISP
+# Update the resource URL and sensor names for your setup
+# =============================================================================
+- resource: http://YOUR_SECONDARY_SMOKEPING_SERVER:8080/
+  scan_interval: 60
+  timeout: 10
+  sensor:
+    - name: "Secondary Cloudflare Latency"
+      unique_id: smokeping_secondary_cloudflare_latency
+      value_template: "{{ value_json.targets.cloudflare.latency_ms | default('unavailable') }}"
+      unit_of_measurement: "ms"
+      state_class: measurement
+      icon: mdi:cloud-outline
+      json_attributes_path: "$.targets.cloudflare"
+      json_attributes:
+        - loss_pct
+        - timestamp
+
+    - name: "Secondary Google Latency"
+      unique_id: smokeping_secondary_google_latency
+      value_template: "{{ value_json.targets.google.latency_ms | default('unavailable') }}"
+      unit_of_measurement: "ms"
+      state_class: measurement
+      icon: mdi:google
+      json_attributes_path: "$.targets.google"
+      json_attributes:
+        - loss_pct
+        - timestamp
+
+    - name: "Secondary AWS Latency"
+      unique_id: smokeping_secondary_aws_latency
+      value_template: "{{ value_json.targets.aws_use1.latency_ms | default('unavailable') }}"
+      unit_of_measurement: "ms"
+      state_class: measurement
+      icon: mdi:aws
+      json_attributes_path: "$.targets.aws_use1"
+      json_attributes:
+        - loss_pct
+        - timestamp
+
+    - name: "Secondary Netflix Latency"
+      unique_id: smokeping_secondary_netflix_latency
+      value_template: "{{ value_json.targets.netflix.latency_ms | default('unavailable') }}"
+      unit_of_measurement: "ms"
+      state_class: measurement
+      icon: mdi:netflix
+      json_attributes_path: "$.targets.netflix"
+      json_attributes:
+        - loss_pct
+        - timestamp
+
+  binary_sensor:
+    - name: "Secondary WAN Healthy"
+      unique_id: smokeping_secondary_wan_healthy
+      value_template: >
+        {% set latency = value_json.targets.cloudflare.latency_ms | float(999) %}
+        {% set loss = value_json.targets.cloudflare.loss_pct | float(100) %}
+        {{ latency < 100 and loss < 10 }}
+      device_class: connectivity
